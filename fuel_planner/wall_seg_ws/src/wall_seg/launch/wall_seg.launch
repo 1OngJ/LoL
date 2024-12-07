@@ -1,0 +1,21 @@
+<launch>
+    <node name="wall_seg_node" pkg="wall_seg" type="wall_seg_node" output="screen" required="true">
+        <!-- 计算是否相邻的距离阈值，大于该阈值认为不相连 -->
+        <param name="wall_seg/distanceThreshold" value="15"/>
+        <!-- 计算夹角的角度阈值，小于该值的角落被忽略 -->
+        <!-- 防止由于误差导致的同一面墙的正反两面被计算 -->
+        <param name="wall_seg/angleThreshold" value="50"/>
+        <!-- 聚类的最小和最大点数 -->
+        <!-- 最小点：防止墙的厚度面被计算 -->
+        <param name="wall_seg/minClusterSize" value="100"/>
+        <param name="wall_seg/maxClusterSize" value="10000"/>
+        <!-- 聚类的邻居点个数 -->
+        <param name="wall_seg/numberOfNeighbours" value="20"/>
+        <!-- 分割的角度阈值，大于该阈值则分割 -->
+        <param name="wall_seg/smoothnessThreshold" value="2.0"/>
+        <!-- 法向量邻域半径 -->
+        <param name="wall_seg/radiusSearch" value="0.5"/>
+    </node>
+
+    <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find wall_seg)/config/wall_seg_visualization.rviz" />
+</launch>

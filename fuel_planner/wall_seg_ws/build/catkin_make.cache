@@ -1,0 +1,2 @@
+wall_seg
+-DCATKIN_DEVEL_PREFIX=/home/long/wall_seg_ws/devel -DCMAKE_INSTALL_PREFIX=/home/long/wall_seg_ws/install -G Unix Makefiles
