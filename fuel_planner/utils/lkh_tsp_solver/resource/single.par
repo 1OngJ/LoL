@@ -1,4 +1,4 @@
-PROBLEM_FILE = /home/long/fuel_ws/src/FUEL/fuel_planner/utils/lkh_tsp_solver/resource/single.tsp
+PROBLEM_FILE = /home/egan/lol_ws/src/LoL/fuel_planner/utils/lkh_tsp_solver/resource/single.tsp
 GAIN23 = NO
-OUTPUT_TOUR_FILE =/home/long/fuel_ws/src/FUEL/fuel_planner/utils/lkh_tsp_solver/resource/single.txt
+OUTPUT_TOUR_FILE =/home/egan/lol_ws/src/LoL/fuel_planner/utils/lkh_tsp_solver/resource/single.txt
 RUNS = 1

@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "/home/long/wall_seg_ws/devel/include/wall_seg/WallInfo.h"
+  "/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/devel/include/wall_seg/WallInfo.h"
   "CMakeFiles/wall_seg_generate_messages_cpp"
 )
 

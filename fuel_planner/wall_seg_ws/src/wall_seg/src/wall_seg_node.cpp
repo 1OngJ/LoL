@@ -14,6 +14,8 @@
 #include <vector>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/segmentation/region_growing.h>
 #include <iostream>
@@ -23,26 +25,24 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <pcl/point_types.h>
 #include <Eigen/Geometry>
+#include <pcl/filters/crop_box.h> // Added for CropBox filter
 #include <wall_seg/WallInfo.h>
+
 using namespace pcl;
 
-class obstacle_wall
-{
-    public:
-    // 墙ID
+class obstacle_wall {
+public:
     uint8_t id;
-    // 墙内点的xyz最大值与最小值
     PointXYZ max;
     PointXYZ min;
-    // 墙的中心和法向量
     PointNormal normal;
     double angle;
     bool explored;
     Eigen::Vector3d centroid;
-    
-    
 };
 
+// 无人机当前位置
+geometry_msgs::PointStamped cur_position;
 
 ros::Publisher pub_clusters;
 ros::Publisher pub_normals;
@@ -55,17 +55,18 @@ int maxClusterSize;
 int numberOfNeighbours;
 double smoothnessThreshold;
 double radiusSearch;
+double interestRadius;
 
-//计算两平面的夹角，返回值为弧度(0-90)
+
+// 计算两平面的夹角，返回值为弧度(0-90)
 double calculateAngle(const Eigen::Vector3f& normal1, const Eigen::Vector3f& normal2) {
     Eigen::Vector3f normalized_normal1 = normal1.normalized();
     Eigen::Vector3f normalized_normal2 = normal2.normalized();
     return acos(abs(normalized_normal1.dot(normalized_normal2)));
 }
 
-//判断两个平面是否相邻，判断条件为两平面距离和夹角
+// 判断两个平面是否相邻，判断条件为两平面距离和夹角
 bool isAdjacent(const obstacle_wall& wall1, const obstacle_wall& wall2) {
-
     double distx1 = std::abs(wall1.min.x - wall2.min.x);
     double distx2 = std::abs(wall1.min.x - wall2.max.x);
     double distx3 = std::abs(wall1.max.x - wall2.min.x);
@@ -79,47 +80,63 @@ bool isAdjacent(const obstacle_wall& wall1, const obstacle_wall& wall2) {
     double d1 = sqrt(distx1 * distx1 + disty1 * disty1);
     double d2 = sqrt(distx2 * distx2 + disty2 * disty2);
     double d3 = sqrt(distx3 * distx3 + disty3 * disty3);
-    double d4 = sqrt(distx4 * distx4 + disty4 * disty4);    
+    double d4 = sqrt(distx4 * distx4 + disty4 * disty4);
 
-    // 计算法向量夹角 通过角度阈值排除掉小角度的墙面
     Eigen::Vector3f normal1(wall1.normal.normal_x, wall1.normal.normal_y, wall1.normal.normal_z);
     Eigen::Vector3f normal2(wall2.normal.normal_x, wall2.normal.normal_y, wall2.normal.normal_z);
     double angleRad = calculateAngle(normal1, normal2);
     double angleDeg = angleRad * 180.0 / M_PI;
 
-    // ROS_INFO("dis: %.2f,thr:%.2f", std::min({ d1,d2,d3,d4 }), distanceThreshold);
-    // ROS_INFO("angle: %.2f,thr:%.2f", angleDeg,angleThreshold);
     return std::min({ d1,d2,d3,d4 }) <= distanceThreshold && angleDeg > angleThreshold;
 }
 
 
-void pointcloudInfoCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
-{
+void pointcloudInfoCallback(const sensor_msgs::PointCloud2ConstPtr& msg) {
+    // 1. Convert ROS PointCloud2 to PCL PointCloud
     PointCloud<PointXYZ>::Ptr cloud(new PointCloud<PointXYZ>);
-
-    // //加载点云文件
-    // if (pcl::io::loadPCDFile("/home/long/wall_seg_ws/src/wall_seg/pcd/无标题.pcd", *cloud) == -1) {
-    //     ROS_ERROR("NiaYiGoJi");
-    // }
-
     fromROSMsg(*msg, *cloud);
-    // ROS_INFO("Received PointCloud! Size: %zu", cloud->size());
 
+    // 2. Crop the point cloud based on current drone position and radius
+    PointCloud<PointXYZ>::Ptr cropped_cloud(new PointCloud<PointXYZ>);
+    pcl::CropBox<pcl::PointXYZ> cropFilter;
+    cropFilter.setInputCloud(cloud);
+
+    Eigen::Vector4f minPoint;
+    minPoint[0] = cur_position.point.x - interestRadius;  // x
+    minPoint[1] = cur_position.point.y - interestRadius;  // y
+    minPoint[2] = cur_position.point.z - interestRadius;  // z
+    cropFilter.setMin(minPoint);
+
+    Eigen::Vector4f maxPoint;
+    maxPoint[0] = cur_position.point.x + interestRadius;  // x
+    maxPoint[1] = cur_position.point.y + interestRadius;  // y
+    maxPoint[2] = cur_position.point.z + interestRadius;  // z
+    cropFilter.setMax(maxPoint);
+
+
+    cropFilter.filter(*cropped_cloud);
+
+    if (cropped_cloud->empty()) {
+        ROS_WARN("Cropped point cloud is empty. Skipping processing.");
+        return;
+    }
+
+
+
+    //  以下部分使用cropped_cloud代替cloud
     NormalEstimation<PointXYZ, Normal> ne;
-    ne.setInputCloud(cloud);
+    ne.setInputCloud(cropped_cloud);
     search::KdTree<PointXYZ>::Ptr tree(new search::KdTree<PointXYZ>());
     ne.setSearchMethod(tree);
-
     ne.setRadiusSearch(radiusSearch);
 
     PointCloud<Normal>::Ptr cloud_normals(new PointCloud<Normal>);
     ne.compute(*cloud_normals);
 
-    // 将XYZ和法向量合并到一起
-    pcl::PointCloud<pcl::PointNormal>::Ptr cloud_with_normals(new pcl::PointCloud<pcl::PointNormal>);
-    pcl::concatenateFields(*cloud, *cloud_normals, *cloud_with_normals);
 
-    // 创建区域生长聚类对象
+    pcl::PointCloud<pcl::PointNormal>::Ptr cloud_with_normals(new pcl::PointCloud<pcl::PointNormal>);
+    pcl::concatenateFields(*cropped_cloud, *cloud_normals, *cloud_with_normals);
+
     RegionGrowing<PointNormal, Normal> reg;
     reg.setMinClusterSize(minClusterSize);
     reg.setMaxClusterSize(maxClusterSize);
@@ -134,51 +151,44 @@ void pointcloudInfoCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
     reg.setCurvatureThreshold(1.0);
 
     std::vector<pcl::PointIndices> clusters;
-    // 执行聚类
     reg.extract(clusters);
-    
-    // ROS_INFO("clusters count: %lu", clusters.size());
+
 
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-    // 创建一个点云来存储带有颜色的聚类结果
-    colored_cloud->points.resize(cloud->points.size());
+    colored_cloud->points.resize(cropped_cloud->points.size());
 
-    // 为每个簇分配颜色
-    for (int i = 0; i < clusters.size(); ++i)
-    {
+
+    for (int i = 0; i < clusters.size(); ++i) {
         uint8_t r = rand() % 255;
         uint8_t g = rand() % 255;
         uint8_t b = rand() % 255;
         uint32_t rgb = (static_cast<uint32_t>(r) << 16 |
             static_cast<uint32_t>(g) << 8 | static_cast<uint32_t>(b));
 
-        for (int j = 0; j < clusters[i].indices.size(); ++j)
-        {
+        for (int j = 0; j < clusters[i].indices.size(); ++j) {
             int index = clusters[i].indices[j];
-            colored_cloud->points[index].x = cloud->points[index].x;
-            colored_cloud->points[index].y = cloud->points[index].y;
-            colored_cloud->points[index].z = cloud->points[index].z;
+            colored_cloud->points[index].x = cropped_cloud->points[index].x;
+            colored_cloud->points[index].y = cropped_cloud->points[index].y;
+            colored_cloud->points[index].z = cropped_cloud->points[index].z;
             colored_cloud->points[index].rgb = *reinterpret_cast<float*>(&rgb);
         }
     }
 
-    // 发布聚类后的点云
+
     sensor_msgs::PointCloud2 output_clusters;
     pcl::toROSMsg(*colored_cloud, output_clusters);
     output_clusters.header.frame_id = "world";
     output_clusters.header.stamp = ros::Time::now();
     pub_clusters.publish(output_clusters);
 
-    // 创建墙列表
+
     std::vector<obstacle_wall> walls;
-    for (int i = 0; i < clusters.size(); ++i)
-    {
+    for (int i = 0; i < clusters.size(); ++i) {
         obstacle_wall* wall = new obstacle_wall();
 
         wall->id = i;
         wall->angle = 0.0;
         wall->explored = false;
-
 
         float maxX = cloud_with_normals->points[clusters[i].indices[0]].x;
         float maxY = cloud_with_normals->points[clusters[i].indices[0]].y;
@@ -191,10 +201,7 @@ void pointcloudInfoCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
         wall->normal.normal_x = wall->normal.normal_y = wall->normal.normal_z = 0;
         wall->normal.x = wall->normal.y = wall->normal.z = 0;
 
-
-        PointXYZ center;
-        for (int j = 0; j < clusters[i].indices.size(); j++)
-        {
+        for (int j = 0; j < clusters[i].indices.size(); j++) {
             auto index = clusters[i].indices[j];
 
             maxX = std::max(maxX, cloud_with_normals->points[index].x);
@@ -208,7 +215,6 @@ void pointcloudInfoCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
             wall->normal.normal_y += cloud_with_normals->points[index].normal_y;
             wall->normal.normal_z += cloud_with_normals->points[index].normal_z;
 
-
             wall->normal.x += cloud_with_normals->points[index].x;
             wall->normal.y += cloud_with_normals->points[index].y;
             wall->normal.z += cloud_with_normals->points[index].z;
@@ -217,13 +223,10 @@ void pointcloudInfoCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
         }
 
         wall->centroid /= clusters[i].indices.size();
-        
+
         wall->normal.normal_x /= clusters[i].indices.size();
         wall->normal.normal_y /= clusters[i].indices.size();
         wall->normal.normal_z /= clusters[i].indices.size();
-        // wall->normal.x /= clusters[i].indices.size();
-        // wall->normal.y /= clusters[i].indices.size();
-        // wall->normal.z /= clusters[i].indices.size();
 
         wall->normal.x = wall->centroid.x();
         wall->normal.y = wall->centroid.y();
@@ -237,18 +240,13 @@ void pointcloudInfoCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
         wall->min.z = minZ;
 
 
-
-        // ROS_INFO("wall:%d,normal_x:%.2f,normal_y:%.2f,normal_z:%.2f", wall->id, wall->normal.normal_x, wall->normal.normal_y, wall->normal.normal_z);
         if (abs(wall->normal.normal_z) > abs(sqrt(wall->normal.normal_x * wall->normal.normal_x + wall->normal.normal_y * wall->normal.normal_y)) / 2) continue;
 
         walls.push_back(*wall);
     }
 
-    pcl::toROSMsg(*colored_cloud, output_clusters);
-    output_clusters.header.frame_id = "world";
 
-    // 发布墙信息
-    // 在墙中心点画出法向量
+
     visualization_msgs::MarkerArray marker_array;
     visualization_msgs::Marker arrow_marker;
     visualization_msgs::Marker text_marker;
@@ -258,7 +256,7 @@ void pointcloudInfoCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
     arrow_marker.ns = "normal";
     arrow_marker.type = visualization_msgs::Marker::ARROW;
     arrow_marker.action = visualization_msgs::Marker::ADD;
-    arrow_marker.scale.x = 0.5; // 箭头的大小
+    arrow_marker.scale.x = 0.5;
     arrow_marker.scale.y = 0.1;
     arrow_marker.scale.z = 0.1;
     arrow_marker.color.r = 1.0;
@@ -271,15 +269,14 @@ void pointcloudInfoCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
     text_marker.header.stamp = ros::Time::now();
     text_marker.ns = "id";
     text_marker.action = visualization_msgs::Marker::ADD;
-    text_marker.pose.orientation.w = 1.0; // 设置朝向为正北方向
+    text_marker.pose.orientation.w = 1.0;
     text_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-    text_marker.scale.z = 0.6; // 设置文本大小
+    text_marker.scale.z = 0.6;
     text_marker.color.b = 255;
     text_marker.color.g = 255;
     text_marker.color.r = 0;
-    text_marker.color.a = 1; // 设置文本透明度为不透明
-    for (int i = 0; i < walls.size(); ++i)
-    {
+    text_marker.color.a = 1;
+    for (int i = 0; i < walls.size(); ++i) {
         arrow_marker.id = walls[i].id;
         arrow_marker.pose.position.x = walls[i].normal.x;
         arrow_marker.pose.position.y = walls[i].normal.y;
@@ -287,16 +284,14 @@ void pointcloudInfoCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
 
         Eigen::Vector3f normal = walls[i].normal.getNormalVector3fMap();
 
-        normal.normalize(); // 归一化法向量
+        normal.normalize();
         Eigen::Vector3f x_axis(1.0, 0.0, 0.0);
         Eigen::Quaternionf q;
 
-        if (normal == x_axis)
-        {
+        if (normal == x_axis) {
             q = Eigen::Quaternionf::Identity();
         }
-        else
-        {
+        else {
             Eigen::Vector3f axis = x_axis.cross(normal).normalized();
             double angle = acos(x_axis.dot(normal));
             q = Eigen::AngleAxisf(angle, axis);
@@ -312,18 +307,16 @@ void pointcloudInfoCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
         geometry_msgs::Pose pose;
         pose.position.x = walls[i].normal.x;
         pose.position.y = walls[i].normal.y;
-        pose.position.z = walls[i].normal.z+1;
+        pose.position.z = walls[i].normal.z + 1;
         std::ostringstream str;
-        str << "-"<<(int)walls[i].id<<"-";
+        str << "-" << (int)walls[i].id << "-";
         text_marker.text = str.str();
-        text_marker.pose = pose; // 设置文本的姿态
+        text_marker.pose = pose;
         marker_array.markers.push_back(text_marker);
 
     }
     pub_normals.publish(marker_array);
-    // ROS_INFO("%ld", marker_array.markers.size());
 
-    // ROS_INFO("wall count: %ld", walls.size());
 
     for (size_t i = 0; i < walls.size(); ++i) {
         for (size_t j = i + 1; j < walls.size(); ++j) {
@@ -332,16 +325,13 @@ void pointcloudInfoCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
                 Eigen::Vector3f normal2(walls[j].normal.normal_x, walls[j].normal.normal_y, walls[j].normal.normal_z);
 
                 double angleRad = calculateAngle(normal1, normal2);
-                double angleDeg = angleRad * 180.0 / M_PI;
 
                 walls[i].angle = angleRad;
                 walls[j].angle = angleRad;
                 walls[i].explored = true;
                 walls[j].explored = true;
 
-                // ROS_INFO("The angle between wall %u and wall %u is %.2f degree", walls[i].id, walls[j].id, angleDeg);
 
-                // Publish WallInfo message
                 wall_seg::WallInfo wall_msg;
                 wall_msg.header.stamp = ros::Time::now();
                 wall_msg.header.frame_id = "world";
@@ -358,7 +348,6 @@ void pointcloudInfoCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
                 wall_msg.corner_position.y = corner_position.y();
                 wall_msg.corner_position.z = corner_position.z();
 
-                // Add min/max points to message
                 wall_msg.min.x = walls[i].min.x;
                 wall_msg.min.y = walls[i].min.y;
                 wall_msg.min.z = walls[i].min.z;
@@ -369,21 +358,23 @@ void pointcloudInfoCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
 
 
                 pub_wall_info.publish(wall_msg);
-                break; 
+                break;
             }
         }
     }
-    // ROS_INFO(" ");
 }
 
 
+void curPositionCallback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
+    cur_position.header = msg->header;
+    cur_position.point = msg->pose.position;
+}
 
-int main(int argc, char** argv)
-{
+
+int main(int argc, char** argv) {
     ros::init(argc, argv, "wall_seg_node");
     ros::NodeHandle nh("~");
 
-    // 获取参数
     nh.param<double>("wall_seg/distanceThreshold", distanceThreshold, 0.2);
     nh.param<double>("wall_seg/angleThreshold", angleThreshold, 10);
     nh.param<int>("wall_seg/minClusterSize", minClusterSize, 100);
@@ -391,25 +382,17 @@ int main(int argc, char** argv)
     nh.param<int>("wall_seg/numberOfNeighbours", numberOfNeighbours, 20);
     nh.param<double>("wall_seg/smoothnessThreshold", smoothnessThreshold, 2.0);
     nh.param<double>("wall_seg/radiusSearch", radiusSearch, 0.5);
+    nh.param<double>("wall_seg/interestRadius", interestRadius, 5.0);
 
 
     pub_clusters = nh.advertise<sensor_msgs::PointCloud2>("colored_clusters_output", 1);
     pub_normals = nh.advertise<visualization_msgs::MarkerArray>("normals", 10);
-    pub_wall_info = nh.advertise<wall_seg::WallInfo>("/wall_info", 1); // Custom message publisher
+    pub_wall_info = nh.advertise<wall_seg::WallInfo>("/wall_info", 1);
 
     ros::Subscriber sub_pcfromfuel = nh.subscribe("/sdf_map/occupancy_all", 10, pointcloudInfoCallback);
+    ros::Subscriber sub_cur_position = nh.subscribe("/odom_visualization/pose", 10, curPositionCallback); // Subscribe to drone's current position
 
 
-    // ROS_INFO("%ld", marker_array.markers.size());
-    // ros::Rate loop_rate(3);
-    // while (nh.ok())
-    // {
-    //     pub_clusters.publish(output_clusters);
-    //     pub_normals.publish(marker_array);
-    //     ros::spinOnce();
-    // loop_rate.sleep();
-    // }
     ros::spin();
     return 0;
 }
-

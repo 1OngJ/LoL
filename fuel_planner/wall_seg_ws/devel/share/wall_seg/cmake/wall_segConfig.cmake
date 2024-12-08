@@ -67,14 +67,14 @@ set(wall_seg_CONFIG_INCLUDED TRUE)
 
 # set variables for source/devel/install prefixes
 if("TRUE" STREQUAL "TRUE")
-  set(wall_seg_SOURCE_PREFIX /home/long/wall_seg_ws/src/wall_seg)
-  set(wall_seg_DEVEL_PREFIX /home/long/wall_seg_ws/devel)
+  set(wall_seg_SOURCE_PREFIX /home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/src/wall_seg)
+  set(wall_seg_DEVEL_PREFIX /home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/devel)
   set(wall_seg_INSTALL_PREFIX "")
   set(wall_seg_PREFIX ${wall_seg_DEVEL_PREFIX})
 else()
   set(wall_seg_SOURCE_PREFIX "")
   set(wall_seg_DEVEL_PREFIX "")
-  set(wall_seg_INSTALL_PREFIX /home/long/wall_seg_ws/install)
+  set(wall_seg_INSTALL_PREFIX /home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/install)
   set(wall_seg_PREFIX ${wall_seg_INSTALL_PREFIX})
 endif()
 
@@ -91,9 +91,9 @@ endif()
 # flag project as catkin-based to distinguish if a find_package()-ed project is a catkin project
 set(wall_seg_FOUND_CATKIN_PROJECT TRUE)
 
-if(NOT "/home/long/wall_seg_ws/devel/include;/home/long/wall_seg_ws/src/wall_seg/include " STREQUAL " ")
+if(NOT "/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/devel/include;/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/src/wall_seg/include " STREQUAL " ")
   set(wall_seg_INCLUDE_DIRS "")
-  set(_include_dirs "/home/long/wall_seg_ws/devel/include;/home/long/wall_seg_ws/src/wall_seg/include")
+  set(_include_dirs "/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/devel/include;/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/src/wall_seg/include")
   if(NOT " " STREQUAL " ")
     set(_report "Check the issue tracker '' and consider creating a ticket if the problem has not been reported yet.")
   elseif(NOT " " STREQUAL " ")
@@ -110,7 +110,7 @@ if(NOT "/home/long/wall_seg_ws/devel/include;/home/long/wall_seg_ws/src/wall_seg
         message(FATAL_ERROR "Project 'wall_seg' specifies '${idir}' as an include dir, which is not found.  It does not exist in '${include}'.  ${_report}")
       endif()
     else()
-      message(FATAL_ERROR "Project 'wall_seg' specifies '${idir}' as an include dir, which is not found.  It does neither exist as an absolute directory nor in '/home/long/wall_seg_ws/src/wall_seg/${idir}'.  ${_report}")
+      message(FATAL_ERROR "Project 'wall_seg' specifies '${idir}' as an include dir, which is not found.  It does neither exist as an absolute directory nor in '/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/src/wall_seg/${idir}'.  ${_report}")
     endif()
     _list_append_unique(wall_seg_INCLUDE_DIRS ${include})
   endforeach()
@@ -154,7 +154,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/long/wall_seg_ws/devel/lib;/opt/ros/noetic/lib)
+    foreach(path /home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/devel/lib;/home/egan/ws_livox/devel/lib;/home/egan/catkin_ws/devel/lib;/opt/ros/noetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)

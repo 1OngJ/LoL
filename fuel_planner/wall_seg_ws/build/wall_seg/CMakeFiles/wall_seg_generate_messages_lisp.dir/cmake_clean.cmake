@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "/home/long/wall_seg_ws/devel/share/common-lisp/ros/wall_seg/msg/WallInfo.lisp"
+  "/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/devel/share/common-lisp/ros/wall_seg/msg/WallInfo.lisp"
   "CMakeFiles/wall_seg_generate_messages_lisp"
 )
 

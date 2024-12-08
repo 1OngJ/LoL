@@ -1,2 +1,2 @@
 wall_seg
--DCATKIN_DEVEL_PREFIX=/home/long/wall_seg_ws/devel -DCMAKE_INSTALL_PREFIX=/home/long/wall_seg_ws/install -G Unix Makefiles
+-DCATKIN_DEVEL_PREFIX=/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/devel -DCMAKE_INSTALL_PREFIX=/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/install -G Unix Makefiles

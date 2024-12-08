@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/long/wall_seg_ws/devel/lib/python3/dist-packages/wall_seg/msg/_WallInfo.py"
-  "/home/long/wall_seg_ws/devel/lib/python3/dist-packages/wall_seg/msg/__init__.py"
+  "/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/devel/lib/python3/dist-packages/wall_seg/msg/_WallInfo.py"
+  "/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/devel/lib/python3/dist-packages/wall_seg/msg/__init__.py"
   "CMakeFiles/wall_seg_generate_messages_py"
 )
 

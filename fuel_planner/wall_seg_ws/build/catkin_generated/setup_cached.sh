@@ -7,10 +7,7 @@
 # new environment variables
 
 # modified environment variables
-export CMAKE_PREFIX_PATH="/home/long/wall_seg_ws/devel:$CMAKE_PREFIX_PATH"
-export LD_LIBRARY_PATH="/home/long/wall_seg_ws/devel/lib:$LD_LIBRARY_PATH"
-export PKG_CONFIG_PATH="/home/long/wall_seg_ws/devel/lib/pkgconfig:$PKG_CONFIG_PATH"
-export PWD='/home/long/wall_seg_ws/build'
-export PYTHONPATH="/home/long/wall_seg_ws/devel/lib/python3/dist-packages:$PYTHONPATH"
-export ROSLISP_PACKAGE_DIRECTORIES='/home/long/wall_seg_ws/devel/share/common-lisp'
-export ROS_PACKAGE_PATH="/home/long/wall_seg_ws/src:$ROS_PACKAGE_PATH"
+export CMAKE_PREFIX_PATH="/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/devel:$CMAKE_PREFIX_PATH"
+export PWD='/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/build'
+export ROSLISP_PACKAGE_DIRECTORIES="/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/devel/share/common-lisp:$ROSLISP_PACKAGE_DIRECTORIES"
+export ROS_PACKAGE_PATH="/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/src:$ROS_PACKAGE_PATH"

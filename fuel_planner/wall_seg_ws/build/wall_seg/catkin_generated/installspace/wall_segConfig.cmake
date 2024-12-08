@@ -67,14 +67,14 @@ set(wall_seg_CONFIG_INCLUDED TRUE)
 
 # set variables for source/devel/install prefixes
 if("FALSE" STREQUAL "TRUE")
-  set(wall_seg_SOURCE_PREFIX /home/long/wall_seg_ws/src/wall_seg)
-  set(wall_seg_DEVEL_PREFIX /home/long/wall_seg_ws/devel)
+  set(wall_seg_SOURCE_PREFIX /home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/src/wall_seg)
+  set(wall_seg_DEVEL_PREFIX /home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/devel)
   set(wall_seg_INSTALL_PREFIX "")
   set(wall_seg_PREFIX ${wall_seg_DEVEL_PREFIX})
 else()
   set(wall_seg_SOURCE_PREFIX "")
   set(wall_seg_DEVEL_PREFIX "")
-  set(wall_seg_INSTALL_PREFIX /home/long/wall_seg_ws/install)
+  set(wall_seg_INSTALL_PREFIX /home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/install)
   set(wall_seg_PREFIX ${wall_seg_INSTALL_PREFIX})
 endif()
 
@@ -154,7 +154,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/long/wall_seg_ws/install/lib;/opt/ros/noetic/lib)
+    foreach(path /home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/install/lib;/home/egan/ws_livox/devel/lib;/home/egan/catkin_ws/devel/lib;/opt/ros/noetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)

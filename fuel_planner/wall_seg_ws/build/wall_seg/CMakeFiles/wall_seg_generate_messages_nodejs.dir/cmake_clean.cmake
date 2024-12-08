@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "/home/long/wall_seg_ws/devel/share/gennodejs/ros/wall_seg/msg/WallInfo.js"
+  "/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/devel/share/gennodejs/ros/wall_seg/msg/WallInfo.js"
   "CMakeFiles/wall_seg_generate_messages_nodejs"
 )
 
