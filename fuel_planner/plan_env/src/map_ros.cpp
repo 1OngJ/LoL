@@ -292,12 +292,12 @@ void MapROS::publishMapAll() {
                 ios::app);
   file << "time:" << time_now << ",vol:" << known_volumn << std::endl;
 
-  int limit = 99;
+  // int limit = 99;
   std_msgs::Float64 area_msg;
   area_msg.data = known_volumn;
-  area_pub_.publish(area_msg);
+  // area_pub_.publish(area_msg);
 
-  if(area_msg.data < limit && area_msg.data > 2.1 && time_now - time_tmp >= 1){
+  if(area_msg.data > 30 && time_now - time_tmp >= 1){
     
     time_tmp = time_now;
     flighttime += 1;
@@ -305,11 +305,11 @@ void MapROS::publishMapAll() {
                   ios::app);
     coveragefile << "time:" << flighttime << ",vol" << known_volumn << std::endl;
   }
-  else if(area_msg.data >= limit && !isfinish){
+  else if(isfinish == false){
     ofstream coveragefile("/home/egan/lol_ws/src/LoL/fuel_planner/exploration_manager/resource/coverage.txt",
               ios::app);
     coveragefile << "time:" << flighttime << ",vol" << known_volumn << std::endl;
-    isfinish = !isfinish;
+    isfinish = true;
     coveragefile << "explore end" << std::endl;
   }
 }
