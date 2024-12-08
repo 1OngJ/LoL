@@ -10,6 +10,8 @@
 #include <active_perception/perception_utils.h>
 #include <plan_manage/planner_manager.h>
 #include <plan_manage/backward.hpp>
+#include <ros/package.h>
+
 namespace backward {
 backward::SignalHandling sh;
 }
@@ -33,6 +35,10 @@ double traj_duration_;
 ros::Time start_time_;
 int traj_id_;
 int pub_traj_id_;
+
+
+std::string exploration_resource_path;
+std::string time_and_length_file_name;
 
 shared_ptr<PerceptionUtils> percep_utils_;
 
@@ -282,8 +288,7 @@ void finishCallback(const std_msgs::Bool msg){
   bool once = false;
     if(msg.data == true && once == false){
     once = true;
-    ofstream file("/home/long/fuel_ws/src/FUEL/fuel_planner/exploration_manager/resource/timeAndlength.txt",
-                ios::app);
+    ofstream file(time_and_length_file_name, ios::app);
     file << "flight:" << flight_t << ",path length:" << len << "mean vel:" << len / flight_t << ", energy is:" << energy << std::endl;
     
   }
@@ -502,6 +507,19 @@ int main(int argc, char** argv) {
   // 创建 FastPlannerManager 实例并初始化指针
   planner_manager_.reset(new fast_planner::FastPlannerManager);
   planner_manager_->initPlanModules(nh); // 初始化规划模块
+
+
+     if (!nh.getParam("exploration_resource_path", exploration_resource_path)) {
+     ROS_ERROR("Failed to get parameter 'exploration_resource_path'");
+  }
+
+
+  std::string package_path = ros::package::getPath("exploration_manager");
+  if (package_path.empty()) {
+    ROS_ERROR("Failed to get 'exploration_manager' package path");
+    return -1;
+  }
+  time_and_length_file_name = package_path + "/" + exploration_resource_path + "/timeAndlength.txt";
 
   nh.param("traj_server/pub_traj_id", pub_traj_id_, -1);
   nh.param("fsm/replan_time", replan_time_, 0.1);

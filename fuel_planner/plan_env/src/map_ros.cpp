@@ -9,7 +9,7 @@
 #include <pcl/common/common.h> // 用于获取点云边界框
 #include <pcl/filters/voxel_grid.h>
 
-
+#include <ros/package.h>
 #include <fstream>
 
 static bool isfinish = false;
@@ -31,6 +31,20 @@ void MapROS::setMap(SDFMap* map) {
 }
 
 void MapROS::init() {
+
+  std::string exploration_resource_path;
+if (!node_.getParam("exploration_resource_path", exploration_resource_path)) {
+  ROS_ERROR("Failed to get parameter 'exploration_resource_path'");
+}
+
+
+  std::string package_path = ros::package::getPath("exploration_manager"); //获取包路径
+  if(package_path.empty()){
+   ROS_ERROR("Failed to get 'exploration_manager' path");
+  }
+  curve_file_name = package_path + "/" + exploration_resource_path+ "/curve1.txt";
+  coverage_file_name = package_path + "/" + exploration_resource_path+ "/coverage.txt";
+
   node_.param("map_ros/fx", fx_, -1.0);
   node_.param("map_ros/fy", fy_, -1.0);
   node_.param("map_ros/cx", cx_, -1.0);
@@ -303,8 +317,7 @@ void MapROS::publishMapAll() {
 
 
 
-  ofstream file("/home/long/fuel_ws/src/FUEL/fuel_planner/exploration_manager/resource/curve1.txt",
-                ios::app);
+  ofstream file(curve_file_name, ios::app);
   file << "time:" << time_now << ",vol:" << known_volumn << std::endl;
 
   // int limit = 99;
@@ -316,13 +329,11 @@ void MapROS::publishMapAll() {
     
     time_tmp = time_now;
     flighttime += 1;
-    ofstream coveragefile("/home/long/fuel_ws/src/FUEL/fuel_planner/exploration_manager/resource/coverage.txt",
-                  ios::app);
+    ofstream coveragefile(coverage_file_name, ios::app);
     coveragefile << "time:" << flighttime << ",vol" << known_volumn << std::endl;
   }
   else if(isfinish == true){
-    ofstream coveragefile("/home/long/fuel_ws/src/FUEL/fuel_planner/exploration_manager/resource/coverage.txt",
-              ios::app);
+    ofstream coveragefile(coverage_file_name, ios::app);
     coveragefile << "time:" << flighttime << ",vol" << known_volumn << std::endl;
     isfinish = false;
     coveragefile << "explore end" << std::endl;
