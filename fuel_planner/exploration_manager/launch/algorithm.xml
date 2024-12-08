@@ -74,6 +74,8 @@
     <param name="map_ros/show_esdf_time" value="false"/>
     <param name="map_ros/show_all_map" value="true"/>
     <param name="map_ros/frame_id"      value="world"/>
+    <param name="map_ros/exploration_resource_path" value="fuel_planner/exploration_manager/resource" />
+
 
     <!-- Fsm -->
     <param name="fsm/thresh_replan1" value="0.5" type="double"/>

@@ -90,6 +90,9 @@ private:
   bool show_esdf_time_, show_occ_time_;
   bool show_all_map_;
 
+  std::string curve_file_name;
+  std::string coverage_file_name;
+
   // data
   // flags of map state
   bool local_updated_, esdf_need_update_;
