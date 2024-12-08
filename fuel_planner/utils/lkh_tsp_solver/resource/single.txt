@@ -1,56 +1,11 @@
-<<<<<<< HEAD
-NAME : single.58169.tour
-COMMENT : Length = 58169
-COMMENT : Found by LKH [Keld Helsgaun] Sun Dec  8 20:38:07 2024
-=======
-NAME : single.751.tour
-COMMENT : Length = 751
-COMMENT : Found by LKH [Keld Helsgaun] Sun Dec  8 15:55:55 2024
->>>>>>> 67d8aeae5b95b7d16c2c398a9344a9997299bde0
+NAME : single.1239.tour
+COMMENT : Length = 1239
+COMMENT : Found by LKH [Keld Helsgaun] Sun Dec  8 23:12:29 2024
 TYPE : TOUR
-DIMENSION : 42
+DIMENSION : 3
 TOUR_SECTION
 1
-2
-4
 3
-5
-6
-7
-8
-10
-9
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-42
-41
-40
-39
-38
-37
-36
-35
-34
-33
-32
-31
-30
-29
-28
-27
-26
-25
-24
-23
-21
-22
+2
 -1
 EOF
