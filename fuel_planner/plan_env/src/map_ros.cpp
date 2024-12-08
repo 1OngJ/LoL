@@ -96,8 +96,8 @@ void MapROS::init() {
   map_start_time_ = ros::Time::now();
 
 
-  int status = pcl::io::loadPCDFile<pcl::PointXYZ>("/home/egan/lol_ws/src/LoL/uav_simulator/map_generator/resource/office2.pcd", mapcloud);
-  map_total_volome = getPointCloudVoxelVolume(mapcloud);
+  // int status = pcl::io::loadPCDFile<pcl::PointXYZ>("/home/egan/lol_ws/src/LoL/uav_simulator/map_generator/resource/office2.pcd", mapcloud);
+  // map_total_volome = getPointCloudVoxelVolume(mapcloud);
 }
 
 void MapROS::visCallback(const ros::TimerEvent& e) {
