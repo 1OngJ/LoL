@@ -1,0 +1,1 @@
+flight:1511.37,path length:1771.71mean vel:1.17226, energy is:21602.4
