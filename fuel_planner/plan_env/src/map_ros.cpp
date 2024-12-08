@@ -96,7 +96,7 @@ void MapROS::init() {
   map_start_time_ = ros::Time::now();
 
 
-  int status = pcl::io::loadPCDFile<pcl::PointXYZ>("/home/long/fuel_ws/src/FUEL/uav_simulator/map_generator/resource/office2.pcd", mapcloud);
+  int status = pcl::io::loadPCDFile<pcl::PointXYZ>("/home/egan/lol_ws/src/LoL/uav_simulator/map_generator/resource/office2.pcd", mapcloud);
   map_total_volome = getPointCloudVoxelVolume(mapcloud);
 }
 
@@ -288,7 +288,7 @@ void MapROS::publishMapAll() {
 
 
 
-  ofstream file("/home/long/fuel_ws/src/FUEL/fuel_planner/exploration_manager/resource/curve1.txt",
+  ofstream file("/home/egan/lol_ws/src/LoL/fuel_planner/exploration_manager/resource/curve1.txt",
                 ios::app);
   file << "time:" << time_now << ",vol:" << known_volumn << std::endl;
 
@@ -301,12 +301,12 @@ void MapROS::publishMapAll() {
     
     time_tmp = time_now;
     flighttime += 1;
-    ofstream coveragefile("/home/long/fuel_ws/src/FUEL/fuel_planner/exploration_manager/resource/coverage.txt",
+    ofstream coveragefile("/home/egan/lol_ws/src/LoL/fuel_planner/exploration_manager/resource/coverage.txt",
                   ios::app);
     coveragefile << "time:" << flighttime << ",vol" << known_volumn << std::endl;
   }
   else if(area_msg.data >= limit && !isfinish){
-    ofstream coveragefile("/home/long/fuel_ws/src/FUEL/fuel_planner/exploration_manager/resource/coverage.txt",
+    ofstream coveragefile("/home/egan/lol_ws/src/LoL/fuel_planner/exploration_manager/resource/coverage.txt",
               ios::app);
     coveragefile << "time:" << flighttime << ",vol" << known_volumn << std::endl;
     isfinish = !isfinish;

@@ -282,7 +282,7 @@ void finishCallback(const std_msgs::Bool msg){
   bool once = false;
     if(msg.data == true && once == false){
     once = true;
-    ofstream file("/home/long/fuel_ws/src/FUEL/fuel_planner/exploration_manager/resource/timeAndlength.txt",
+    ofstream file("/home/egan/lol_ws/src/LoL/fuel_planner/exploration_manager/resource/timeAndlength.txt",
                 ios::app);
     file << "flight:" << flight_t << ",path length:" << len << "mean vel:" << len / flight_t << ", energy is:" << energy << std::endl;
     
