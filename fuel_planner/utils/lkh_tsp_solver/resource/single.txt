@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 NAME : single.58169.tour
 COMMENT : Length = 58169
 COMMENT : Found by LKH [Keld Helsgaun] Sun Dec  8 20:38:07 2024
+=======
+NAME : single.751.tour
+COMMENT : Length = 751
+COMMENT : Found by LKH [Keld Helsgaun] Sun Dec  8 15:55:55 2024
+>>>>>>> 67d8aeae5b95b7d16c2c398a9344a9997299bde0
 TYPE : TOUR
 DIMENSION : 42
 TOUR_SECTION

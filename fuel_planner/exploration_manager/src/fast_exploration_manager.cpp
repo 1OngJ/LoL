@@ -407,7 +407,7 @@ void FastExplorationManager::findGlobalTour(
 
         double distance_cost = cost_mat(i, j); // 获取原始距离成本
         double corner_cost_j = (i == 0) ? 0.0 : cornerCost(ed_->points_[j - 1], wall_angles_); // 计算目标视点的角落成本
-        ROS_INFO("Viewpoint %d corner cost: %f", j, corner_cost_j);
+        // ROS_INFO("Viewpoint %d corner cost: %f", j, corner_cost_j);
 
         cost_mat(i, j) = w_d * distance_cost + w_c * corner_cost_j; // 更新成本矩阵
     }
