@@ -8,6 +8,8 @@
 #include <pcl_conversions/pcl_conversions.h>
 
 #include <ros/ros.h>
+#include "std_msgs/Bool.h"
+#include "std_msgs/Empty.h"
 
 #include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -87,6 +89,9 @@ private:
   double visualization_truncate_height_, visualization_truncate_low_;
   bool show_esdf_time_, show_occ_time_;
   bool show_all_map_;
+
+  std::string curve_file_name;
+  std::string coverage_file_name;
 
   // data
   // flags of map state

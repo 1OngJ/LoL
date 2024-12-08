@@ -9,7 +9,7 @@
 #include <pcl/common/common.h> // 用于获取点云边界框
 #include <pcl/filters/voxel_grid.h>
 
-
+#include <ros/package.h>
 #include <fstream>
 
 static bool isfinish = false;
@@ -18,6 +18,8 @@ static double flighttime = 0;
 string file_name;
 pcl::PointCloud<pcl::PointXYZ> mapcloud;
 namespace fast_planner {
+void finishCallback(const std_msgs::Bool msg);
+
 MapROS::MapROS() {
 }
 
@@ -29,6 +31,20 @@ void MapROS::setMap(SDFMap* map) {
 }
 
 void MapROS::init() {
+
+  std::string exploration_resource_path;
+if (!node_.getParam("exploration_resource_path", exploration_resource_path)) {
+  ROS_ERROR("Failed to get parameter 'exploration_resource_path'");
+}
+
+
+  std::string package_path = ros::package::getPath("exploration_manager"); //获取包路径
+  if(package_path.empty()){
+   ROS_ERROR("Failed to get 'exploration_manager' path");
+  }
+  curve_file_name = package_path + "/" + exploration_resource_path+ "/curve1.txt";
+  coverage_file_name = package_path + "/" + exploration_resource_path+ "/coverage.txt";
+
   node_.param("map_ros/fx", fx_, -1.0);
   node_.param("map_ros/fy", fy_, -1.0);
   node_.param("map_ros/cx", cx_, -1.0);
@@ -78,7 +94,9 @@ void MapROS::init() {
   update_range_pub_ = node_.advertise<visualization_msgs::Marker>("/sdf_map/update_range", 10);
   depth_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/depth_cloud", 10);
 
-  area_pub_ = node_.advertise<std_msgs::Float64>("/sdf_map/area", 10); //  发布到 /sdf_map/area topic
+  ros::Subscriber finish_sub_ = node_.subscribe("/planning/finishexplore",2,finishCallback);
+
+  // area_pub_ = node_.advertise<std_msgs::Float64>("/sdf_map/area", 10); //  发布到 /sdf_map/area topic
 
   depth_sub_.reset(new message_filters::Subscriber<sensor_msgs::Image>(node_, "/map_ros/depth", 50));
   cloud_sub_.reset(
@@ -95,8 +113,8 @@ void MapROS::init() {
 
   map_start_time_ = ros::Time::now();
 
-
-  // int status = pcl::io::loadPCDFile<pcl::PointXYZ>("/home/egan/lol_ws/src/LoL/uav_simulator/map_generator/resource/office2.pcd", mapcloud);
+  
+  // int status = pcl::io::loadPCDFile<pcl::PointXYZ>("/home/long/fuel_ws/src/FUEL/uav_simulator/map_generator/resource/office2.pcd", mapcloud);
   // map_total_volome = getPointCloudVoxelVolume(mapcloud);
 }
 
@@ -249,6 +267,17 @@ double MapROS::getPointCloudVoxelVolume(const pcl::PointCloud<pcl::PointXYZ>& cl
 }
 
 
+void finishCallback(const std_msgs::Bool msg){
+  if(msg.data == false){
+    isfinish = false;
+  }
+  else if (msg.data == true)
+  {
+    isfinish = true;
+  }
+  
+}
+
 void MapROS::publishMapAll() {
   pcl::PointXYZ pt;
   pcl::PointCloud<pcl::PointXYZ> cloud1, cloud2;
@@ -288,8 +317,7 @@ void MapROS::publishMapAll() {
 
 
 
-  ofstream file("/home/egan/lol_ws/src/LoL/fuel_planner/exploration_manager/resource/curve1.txt",
-                ios::app);
+  ofstream file(curve_file_name, ios::app);
   file << "time:" << time_now << ",vol:" << known_volumn << std::endl;
 
   // int limit = 99;
@@ -297,19 +325,17 @@ void MapROS::publishMapAll() {
   area_msg.data = known_volumn;
   // area_pub_.publish(area_msg);
 
-  if(area_msg.data > 30 && time_now - time_tmp >= 1){
+  if(known_volumn > 29 && isfinish == false && time_now - time_tmp >= 1){
     
     time_tmp = time_now;
     flighttime += 1;
-    ofstream coveragefile("/home/egan/lol_ws/src/LoL/fuel_planner/exploration_manager/resource/coverage.txt",
-                  ios::app);
+    ofstream coveragefile(coverage_file_name, ios::app);
     coveragefile << "time:" << flighttime << ",vol" << known_volumn << std::endl;
   }
-  else if(isfinish == false){
-    ofstream coveragefile("/home/egan/lol_ws/src/LoL/fuel_planner/exploration_manager/resource/coverage.txt",
-              ios::app);
+  else if(isfinish == true){
+    ofstream coveragefile(coverage_file_name, ios::app);
     coveragefile << "time:" << flighttime << ",vol" << known_volumn << std::endl;
-    isfinish = true;
+    isfinish = false;
     coveragefile << "explore end" << std::endl;
   }
 }
