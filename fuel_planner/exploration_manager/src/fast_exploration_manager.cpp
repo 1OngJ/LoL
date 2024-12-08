@@ -99,45 +99,45 @@ void FastExplorationManager::initialize(ros::NodeHandle& nh) {
 }
 
 
-void FastExplorationManager::publishCornerCost() {
-    // ... existing code to get map dimensions, etc. ...
-    pcl::PointCloud<pcl::PointXYZI> cloud;
-    for (int x = 0; x < 50; x++) {
-        for (int y = 0; y < 50; y++) {
-            for (int z = 0; z < 10; z++) {
-                Eigen::Vector3d pos;
-                Eigen::Vector3i idx(x, y, z);
-                sdf_map_->indexToPos(idx, pos);
-                double cost = cornerCost(pos, wall_angles_);
+// void FastExplorationManager::publishCornerCost() {
+//     // ... existing code to get map dimensions, etc. ...
+//     pcl::PointCloud<pcl::PointXYZI> cloud;
+//     for (int x = 0; x < 50; x++) {
+//         for (int y = 0; y < 50; y++) {
+//             for (int z = 0; z < 10; z++) {
+//                 Eigen::Vector3d pos;
+//                 Eigen::Vector3i idx(x, y, z);
+//                 sdf_map_->indexToPos(idx, pos);
+//                 double cost = cornerCost(pos, wall_angles_);
 
-                pcl::PointXYZI p;
-                p.x = pos(0);
-                p.y = pos(1);
-                p.z = pos(2);
-                p.intensity = 1.0 - (cost / 10.0); // 反转并归一化成本
+//                 pcl::PointXYZI p;
+//                 p.x = pos(0);
+//                 p.y = pos(1);
+//                 p.z = pos(2);
+//                 p.intensity = 1.0 - (cost / 10.0); // 反转并归一化成本
 
-                cloud.points.push_back(p);
-            }
-        }
-    }
-    cloud.width = cloud.points.size();
-    cloud.height = 1;
-    cloud.is_dense = true;
-    pcl::PCLPointCloud2 cloud_pc2;
-    pcl::toPCLPointCloud2(cloud, cloud_pc2);
-    sensor_msgs::PointCloud2 cloud_msg;
-    pcl_conversions::fromPCL(cloud_pc2, cloud_msg);
+//                 cloud.points.push_back(p);
+//             }
+//         }
+//     }
+//     cloud.width = cloud.points.size();
+//     cloud.height = 1;
+//     cloud.is_dense = true;
+//     pcl::PCLPointCloud2 cloud_pc2;
+//     pcl::toPCLPointCloud2(cloud, cloud_pc2);
+//     sensor_msgs::PointCloud2 cloud_msg;
+//     pcl_conversions::fromPCL(cloud_pc2, cloud_msg);
 
 
-    cloud_msg.header.frame_id = "world";
-    cloud_msg.header.stamp = ros::Time::now();
+//     cloud_msg.header.frame_id = "world";
+//     cloud_msg.header.stamp = ros::Time::now();
 
-    corner_cost_pub_.publish(cloud_msg);
-}
+//     corner_cost_pub_.publish(cloud_msg);
+// }
 int FastExplorationManager::planExploreMotion(
     const Vector3d& pos, const Vector3d& vel, const Vector3d& acc, const Vector3d& yaw) {
 
-  publishCornerCost();
+  // publishCornerCost();
 
   ros::NodeHandle nh_private("~");
 
