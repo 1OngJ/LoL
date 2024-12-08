@@ -1,8 +1,0 @@
-prefix=/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/devel
-
-Name: wall_seg
-Description: Description of wall_seg
-Version: 0.0.0
-Cflags: -I/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/devel/include -I/home/egan/lol_ws/src/LoL/fuel_planner/wall_seg_ws/src/wall_seg/include
-Libs: -L${prefix}/lib -lwall_seg
-Requires: message_runtime
