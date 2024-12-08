@@ -294,7 +294,7 @@ void MapROS::publishMapAll() {
 
   int limit = 99;
   std_msgs::Float64 area_msg;
-  area_msg.data = known_volumn/767.779 * 100;
+  area_msg.data = known_volumn;
   area_pub_.publish(area_msg);
 
   if(area_msg.data < limit && area_msg.data > 2.1 && time_now - time_tmp >= 1){
@@ -303,12 +303,12 @@ void MapROS::publishMapAll() {
     flighttime += 1;
     ofstream coveragefile("/home/long/fuel_ws/src/FUEL/fuel_planner/exploration_manager/resource/coverage.txt",
                   ios::app);
-    coveragefile << "time:" << flighttime << ",coverage:" << area_msg.data << ",vol" << known_volumn << std::endl;
+    coveragefile << "time:" << flighttime << ",vol" << known_volumn << std::endl;
   }
   else if(area_msg.data >= limit && !isfinish){
     ofstream coveragefile("/home/long/fuel_ws/src/FUEL/fuel_planner/exploration_manager/resource/coverage.txt",
               ios::app);
-    coveragefile << "time:" << flighttime << ",coverage:" << area_msg.data << ",vol" << known_volumn << std::endl;
+    coveragefile << "time:" << flighttime << ",vol" << known_volumn << std::endl;
     isfinish = !isfinish;
     coveragefile << "explore end" << std::endl;
   }

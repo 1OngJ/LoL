@@ -167,106 +167,106 @@ void HeadingPlanner::setMap(const shared_ptr<SDFMap>& map) {
   sdf_map_ = map;
 }
 
-// void HeadingPlanner::searchPathOfYaw(const vector<Eigen::Vector3d>& pts, const vector<double>& yaws,
-//                                       const double& dt, const Eigen::MatrixXd& ctrl_pts,
-//                                       vector<double>& path) {
-//   Graph yaw_graph;
-//   yaw_graph.setParams(w_, max_yaw_rate_, dt);
-//   int gid = 0;
-//   vector<YawVertex::Ptr> layer, last_layer;
-//   Eigen::Vector3d cur_pos = pts[0];
-
-//   for (int i = 0; i < yaws.size(); ++i) {
-//     // add one layer of vertice representing discretized yaws at one waypoint
-//     auto t1 = ros::Time::now();
-//     bool start_end = (i == 0 || i == yaws.size() - 1);
-//     if (start_end) {  // start and end vertice
-//       YawVertex::Ptr vert(new YawVertex(yaws[i], 0, gid++));
-//       yaw_graph.addVertex(vert);
-//       layer.push_back(vert);
-//     } else {  // inter vertice
-//       initCastFlag(pts[i]);
-//       int vert_num = 2 * half_vert_num_ + 1;
-//       vector<future<double>> futs(vert_num);
-//       for (int j = 0; j < vert_num; ++j) {  // evaluate info gain in parallel
-//         double ys = yaws[i] + double(j - half_vert_num_) * yaw_diff_;
-//         futs[j] = std::async(std::launch::async, &HeadingPlanner::calcInformationGain, this, pts[i], ys,
-//                               ctrl_pts, j);
-//       }
-//       for (int j = 0; j < vert_num; ++j) {
-//         double ys = yaws[i] + double(j - half_vert_num_) * yaw_diff_;
-//         double gain = futs[j].get();
-//         YawVertex::Ptr vert(new YawVertex(ys, gain, gid++));
-//         yaw_graph.addVertex(vert);
-//         layer.push_back(vert);
-//       }
-//     }
-//     // // debug
-//     // std::cout << "pos: " << pts[i].transpose() << std::endl;
-//     // std::cout << "center yaw: " << int(yaws[i] * 57.3) << std::endl;
-//     // for (auto vl : layer) {
-//     //   std::cout << vl->id_ << ":" << int(vl->yaw_ * 57.3) << "; ";
-//     // }
-//     // std::cout << "" << std::endl;
-//     // connect vertice from last layer to this layer
-//     // std::cout << "-------------" << (ros::Time::now() - t1).toSec() << " secs" <<
-//     // std::endl;
-
-//     for (auto v1 : last_layer) {
-//       for (auto v2 : layer) {
-//         yaw_graph.addEdge(v1->id_, v2->id_);
-//         // std::cout << v1->id_ << "->" << v2->id_ << "; ";
-//       }
-//     }
-//     last_layer.clear();
-//     last_layer.swap(layer);
-//   }
-//   auto t1 = ros::Time::now();
-//   vector<YawVertex::Ptr> vert_path;
-//   yaw_graph.dijkstraSearch(0, gid - 1, vert_path);
-
-//   std::cout << "Gains of " << vert_path.size() << " vertice: ";
-//   for (auto vert : vert_path) {
-//     path.push_back(vert->yaw_);
-//     std::cout << vert->info_gain_ << ", ";
-//   }
-//   std::cout << "" << std::endl;
-// }
-
-// 贪心实现
 void HeadingPlanner::searchPathOfYaw(const vector<Eigen::Vector3d>& pts, const vector<double>& yaws,
-                                    const double& dt, const Eigen::MatrixXd& ctrl_pts,
-                                    vector<double>& path) {
+                                      const double& dt, const Eigen::MatrixXd& ctrl_pts,
+                                      vector<double>& path) {
+  Graph yaw_graph;
+  yaw_graph.setParams(w_, max_yaw_rate_, dt);
+  int gid = 0;
+  vector<YawVertex::Ptr> layer, last_layer;
+  Eigen::Vector3d cur_pos = pts[0];
 
-  // path.push_back(yaws[0]); // 起始点的航向不变
-
-  for (int i = 1; i < pts.size(); ++i) {
-    double best_yaw = 0.0;
-    double max_gain = -1.0;
-
-    initCastFlag(pts[i]); // 初始化射线投射标志
-
-    int vert_num = 2 * half_vert_num_ + 1;
-    vector<future<double>> futs(vert_num);
-
-    for (int j = 0; j < vert_num; ++j) {  // 计算每个航向的信息增益
-      double ys = yaws[i] + double(j - half_vert_num_) * yaw_diff_;
-      futs[j] = std::async(std::launch::async, &HeadingPlanner::calcInformationGain, this, pts[i], ys, ctrl_pts, j);
-    }
-
-    for (int j = 0; j < vert_num; ++j) {
-      double ys = yaws[i] + double(j - half_vert_num_) * yaw_diff_;
-      double gain = futs[j].get();
-
-      if (gain > max_gain) { // 选择信息增益最大的航向
-        max_gain = gain;
-        best_yaw = ys;
+  for (int i = 0; i < yaws.size(); ++i) {
+    // add one layer of vertice representing discretized yaws at one waypoint
+    auto t1 = ros::Time::now();
+    bool start_end = (i == 0 || i == yaws.size() - 1);
+    if (start_end) {  // start and end vertice
+      YawVertex::Ptr vert(new YawVertex(yaws[i], 0, gid++));
+      yaw_graph.addVertex(vert);
+      layer.push_back(vert);
+    } else {  // inter vertice
+      initCastFlag(pts[i]);
+      int vert_num = 2 * half_vert_num_ + 1;
+      vector<future<double>> futs(vert_num);
+      for (int j = 0; j < vert_num; ++j) {  // evaluate info gain in parallel
+        double ys = yaws[i] + double(j - half_vert_num_) * yaw_diff_;
+        futs[j] = std::async(std::launch::async, &HeadingPlanner::calcInformationGain, this, pts[i], ys,
+                              ctrl_pts, j);
+      }
+      for (int j = 0; j < vert_num; ++j) {
+        double ys = yaws[i] + double(j - half_vert_num_) * yaw_diff_;
+        double gain = futs[j].get();
+        YawVertex::Ptr vert(new YawVertex(ys, gain, gid++));
+        yaw_graph.addVertex(vert);
+        layer.push_back(vert);
       }
     }
+    // // debug
+    // std::cout << "pos: " << pts[i].transpose() << std::endl;
+    // std::cout << "center yaw: " << int(yaws[i] * 57.3) << std::endl;
+    // for (auto vl : layer) {
+    //   std::cout << vl->id_ << ":" << int(vl->yaw_ * 57.3) << "; ";
+    // }
+    // std::cout << "" << std::endl;
+    // connect vertice from last layer to this layer
+    // std::cout << "-------------" << (ros::Time::now() - t1).toSec() << " secs" <<
+    // std::endl;
 
-    path.push_back(best_yaw); // 将最佳航向添加到路径中
+    for (auto v1 : last_layer) {
+      for (auto v2 : layer) {
+        yaw_graph.addEdge(v1->id_, v2->id_);
+        // std::cout << v1->id_ << "->" << v2->id_ << "; ";
+      }
+    }
+    last_layer.clear();
+    last_layer.swap(layer);
   }
+  auto t1 = ros::Time::now();
+  vector<YawVertex::Ptr> vert_path;
+  yaw_graph.dijkstraSearch(0, gid - 1, vert_path);
+
+  std::cout << "Gains of " << vert_path.size() << " vertice: ";
+  for (auto vert : vert_path) {
+    path.push_back(vert->yaw_);
+    std::cout << vert->info_gain_ << ", ";
+  }
+  std::cout << "" << std::endl;
 }
+
+// 贪心实现
+// void HeadingPlanner::searchPathOfYaw(const vector<Eigen::Vector3d>& pts, const vector<double>& yaws,
+//                                     const double& dt, const Eigen::MatrixXd& ctrl_pts,
+//                                     vector<double>& path) {
+
+//   // path.push_back(yaws[0]); // 起始点的航向不变
+
+//   for (int i = 1; i < pts.size(); ++i) {
+//     double best_yaw = 0.0;
+//     double max_gain = -1.0;
+
+//     initCastFlag(pts[i]); // 初始化射线投射标志
+
+//     int vert_num = 2 * half_vert_num_ + 1;
+//     vector<future<double>> futs(vert_num);
+
+//     for (int j = 0; j < vert_num; ++j) {  // 计算每个航向的信息增益
+//       double ys = yaws[i] + double(j - half_vert_num_) * yaw_diff_;
+//       futs[j] = std::async(std::launch::async, &HeadingPlanner::calcInformationGain, this, pts[i], ys, ctrl_pts, j);
+//     }
+
+//     for (int j = 0; j < vert_num; ++j) {
+//       double ys = yaws[i] + double(j - half_vert_num_) * yaw_diff_;
+//       double gain = futs[j].get();
+
+//       if (gain > max_gain) { // 选择信息增益最大的航向
+//         max_gain = gain;
+//         best_yaw = ys;
+//       }
+//     }
+
+//     path.push_back(best_yaw); // 将最佳航向添加到路径中
+//   }
+// }
 
 
 

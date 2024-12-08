@@ -1,5 +1,0 @@
-time:1,coverage:2.90253,vol22.285
-time:2,coverage:3.00738,vol23.09
-time:3,coverage:3.03004,vol23.264
-time:4,coverage:3.0303,vol23.266
-time:5,coverage:3.03043,vol23.267

@@ -99,45 +99,43 @@ void FastExplorationManager::initialize(ros::NodeHandle& nh) {
 }
 
 
-void FastExplorationManager::publishCornerCost() {
-    // ... existing code to get map dimensions, etc. ...
-    pcl::PointCloud<pcl::PointXYZI> cloud;
-    for (int x = 0; x < 50; x++) {
-        for (int y = 0; y < 50; y++) {
-            for (int z = 0; z < 10; z++) {
-                Eigen::Vector3d pos;
-                Eigen::Vector3i idx(x, y, z);
-                sdf_map_->indexToPos(idx, pos);
-                double cost = cornerCost(pos, wall_angles_);
+// void FastExplorationManager::publishCornerCost() {
+//     pcl::PointCloud<pcl::PointXYZI> cloud;
+//     for (int x = 0; x < 50; x++) {
+//         for (int y = 0; y < 50; y++) {
+//             for (int z = 0; z < 10; z++) {
+//                 Eigen::Vector3d pos;
+//                 Eigen::Vector3i idx(x, y, z);
+//                 sdf_map_->indexToPos(idx, pos);
+//                 double cost = cornerCost(pos, wall_angles_);
 
-                pcl::PointXYZI p;
-                p.x = pos(0);
-                p.y = pos(1);
-                p.z = pos(2);
-                p.intensity = 1.0 - (cost / 10.0); // 反转并归一化成本
+//                 pcl::PointXYZI p;
+//                 p.x = pos(0);
+//                 p.y = pos(1);
+//                 p.z = pos(2);
+//                 p.intensity = 1.0 - (cost / 10.0); // 反转并归一化成本
 
-                cloud.points.push_back(p);
-            }
-        }
-    }
-    cloud.width = cloud.points.size();
-    cloud.height = 1;
-    cloud.is_dense = true;
-    pcl::PCLPointCloud2 cloud_pc2;
-    pcl::toPCLPointCloud2(cloud, cloud_pc2);
-    sensor_msgs::PointCloud2 cloud_msg;
-    pcl_conversions::fromPCL(cloud_pc2, cloud_msg);
+//                 cloud.points.push_back(p);
+//             }
+//         }
+//     }
+//     cloud.width = cloud.points.size();
+//     cloud.height = 1;
+//     cloud.is_dense = true;
+//     pcl::PCLPointCloud2 cloud_pc2;
+//     pcl::toPCLPointCloud2(cloud, cloud_pc2);
+//     sensor_msgs::PointCloud2 cloud_msg;
+//     pcl_conversions::fromPCL(cloud_pc2, cloud_msg);
 
 
-    cloud_msg.header.frame_id = "world";
-    cloud_msg.header.stamp = ros::Time::now();
+//     cloud_msg.header.frame_id = "world";
+//     cloud_msg.header.stamp = ros::Time::now();
 
-    corner_cost_pub_.publish(cloud_msg);
-}
+//     corner_cost_pub_.publish(cloud_msg);
+// }
+
 int FastExplorationManager::planExploreMotion(
     const Vector3d& pos, const Vector3d& vel, const Vector3d& acc, const Vector3d& yaw) {
-
-  publishCornerCost();
 
   ros::NodeHandle nh_private("~");
 
@@ -149,7 +147,7 @@ int FastExplorationManager::planExploreMotion(
   std::cout << "start pos: " << pos.transpose() << ", vel: " << vel.transpose()
             << ", acc: " << acc.transpose() << std::endl;
 
-  wall_info_sub_ = nh_private.subscribe("/wall_info", 100, &FastExplorationManager::wallInfoCallback, this); // 订阅墙体信息
+  // wall_info_sub_ = nh_private.subscribe("/wall_info", 100, &FastExplorationManager::wallInfoCallback, this); // 订阅墙体信息
 
 
   // Search frontiers and group them into clusters
@@ -392,26 +390,26 @@ void FastExplorationManager::findGlobalTour(
   const int dimension = cost_mat.rows();
 
 
-  // for (int j = 1; j < dimension; ++j) {
-  //       Vector3d viewpoint_position = ed_->points_[j - 1];
-  //       double corner_cost = cornerCost(viewpoint_position, wall_angles_);
-  //       cost_mat(0, j) += corner_cost;
-  //       ROS_INFO("Viewpoint %d corner cost: %f", j - 1, corner_cost); // 打印视点索引和角落成本
+  // // for (int j = 1; j < dimension; ++j) {
+  // //       Vector3d viewpoint_position = ed_->points_[j - 1];
+  // //       double corner_cost = cornerCost(viewpoint_position, wall_angles_);
+  // //       cost_mat(0, j) += corner_cost;
+  // //       ROS_INFO("Viewpoint %d corner cost: %f", j - 1, corner_cost); // 打印视点索引和角落成本
+  // //   }
+
+  // double w_d = 0.9; // 距离权重
+  // double w_c = 0.1; // 角落成本权重  
+  // for (int i = 0; i < dimension; ++i) {
+  //   for (int j = 0; j < dimension; ++j) {
+  //       if (i == j) continue;
+
+  //       double distance_cost = cost_mat(i, j); // 获取原始距离成本
+  //       double corner_cost_j = (i == 0) ? 0.0 : cornerCost(ed_->points_[j - 1], wall_angles_); // 计算目标视点的角落成本
+  //       ROS_INFO("Viewpoint %d corner cost: %f", j, corner_cost_j);
+
+  //       cost_mat(i, j) = w_d * distance_cost + w_c * corner_cost_j; // 更新成本矩阵
   //   }
-
-  double w_d = 0.9; // 距离权重
-  double w_c = 0.1; // 角落成本权重  
-  for (int i = 0; i < dimension; ++i) {
-    for (int j = 0; j < dimension; ++j) {
-        if (i == j) continue;
-
-        double distance_cost = cost_mat(i, j); // 获取原始距离成本
-        double corner_cost_j = (i == 0) ? 0.0 : cornerCost(ed_->points_[j - 1], wall_angles_); // 计算目标视点的角落成本
-        ROS_INFO("Viewpoint %d corner cost: %f", j, corner_cost_j);
-
-        cost_mat(i, j) = w_d * distance_cost + w_c * corner_cost_j; // 更新成本矩阵
-    }
-  }
+  // }
 
   double mat_time = (ros::Time::now() - t1).toSec();
   t1 = ros::Time::now();
@@ -533,48 +531,48 @@ void FastExplorationManager::wallInfoCallback(const wall_seg::WallInfo::ConstPtr
 }
 
 
-// Cost Calculation with corner cost
-// Function for calculating corner cost
-double FastExplorationManager:: cornerCost(const Vector3d& viewpoint_position, const vector<WallAngleInfo>& corners) {
+// // Cost Calculation with corner cost
+// // Function for calculating corner cost
+// double FastExplorationManager:: cornerCost(const Vector3d& viewpoint_position, const vector<WallAngleInfo>& corners) {
 
-  if (corners.empty()) {
-      return 0.0; // No corners, no cost
-  }
+//   if (corners.empty()) {
+//       return 0.0; // No corners, no cost
+//   }
 
-  // double min_corner_dist = std::numeric_limits<double>::max();
-  // for (const auto& corner : corners) {
-  //     double dist = (viewpoint_position - corner.corner_position).norm();
+//   // double min_corner_dist = std::numeric_limits<double>::max();
+//   // for (const auto& corner : corners) {
+//   //     double dist = (viewpoint_position - corner.corner_position).norm();
 
-  //     // Consider angle cost only for unexplored corners
-  //     if (!corner.explored) {
-  //         min_corner_dist = std::min(min_corner_dist, dist / (0.5+corner.angle));//角度越小，分母越小，corner cost越大
-  //     }
-  // }
-
-
-  double min_corner_dist = std::numeric_limits<double>::max();
-  double min_corner_angle = std::numeric_limits<double>::max();  // 添加最小夹角变量
-
-  for (const auto& corner : corners) {
-      double dist = (viewpoint_position - corner.corner_position).norm();
-      min_corner_dist = std::min(min_corner_dist, dist);
-      min_corner_angle = std::min(min_corner_angle, corner.angle);
-  }
-
-  double max_corner_cost = 15;
-  // double distance_cost = 1.0 / min_corner_dist;
-  double distance_cost = 1.0 / (min_corner_dist * min_corner_dist + 0.1);
-  double angle_cost = 1.0/pow(min_corner_angle,2);
-  double w_dist = 0.9;
-  double w_ang = 0.1;
-  double combined_cost = (1.0/(w_dist * distance_cost + w_ang * angle_cost)) * 10.0;
-  return std::min(max_corner_cost, combined_cost); // 返回组合成本或最大成本中的较小值
+//   //     // Consider angle cost only for unexplored corners
+//   //     if (!corner.explored) {
+//   //         min_corner_dist = std::min(min_corner_dist, dist / (0.5+corner.angle));//角度越小，分母越小，corner cost越大
+//   //     }
+//   // }
 
 
-  // // Normalize the cost
-  // double max_corner_cost = 10.0;
-  // return std::min(max_corner_cost, 1.0 / min_corner_dist);
-}
+//   double min_corner_dist = std::numeric_limits<double>::max();
+//   double min_corner_angle = std::numeric_limits<double>::max();  // 添加最小夹角变量
+
+//   for (const auto& corner : corners) {
+//       double dist = (viewpoint_position - corner.corner_position).norm();
+//       min_corner_dist = std::min(min_corner_dist, dist);
+//       min_corner_angle = std::min(min_corner_angle, corner.angle);
+//   }
+
+//   double max_corner_cost = 15;
+//   // double distance_cost = 1.0 / min_corner_dist;
+//   double distance_cost = 1.0 / (min_corner_dist * min_corner_dist + 0.1);
+//   double angle_cost = 1.0/pow(min_corner_angle,2);
+//   double w_dist = 0.9;
+//   double w_ang = 0.1;
+//   double combined_cost = (1.0/(w_dist * distance_cost + w_ang * angle_cost)) * 10.0;
+//   return std::min(max_corner_cost, combined_cost); // 返回组合成本或最大成本中的较小值
+
+
+//   // // Normalize the cost
+//   // double max_corner_cost = 10.0;
+//   // return std::min(max_corner_cost, 1.0 / min_corner_dist);
+// }
 
 
 
