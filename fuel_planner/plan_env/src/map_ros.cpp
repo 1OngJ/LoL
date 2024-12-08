@@ -18,6 +18,8 @@ static double flighttime = 0;
 string file_name;
 pcl::PointCloud<pcl::PointXYZ> mapcloud;
 namespace fast_planner {
+void finishCallback(const std_msgs::Bool msg);
+
 MapROS::MapROS() {
 }
 
@@ -78,7 +80,9 @@ void MapROS::init() {
   update_range_pub_ = node_.advertise<visualization_msgs::Marker>("/sdf_map/update_range", 10);
   depth_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/sdf_map/depth_cloud", 10);
 
-  area_pub_ = node_.advertise<std_msgs::Float64>("/sdf_map/area", 10); //  发布到 /sdf_map/area topic
+  ros::Subscriber finish_sub_ = node_.subscribe("/planning/finishexplore",2,finishCallback);
+
+  // area_pub_ = node_.advertise<std_msgs::Float64>("/sdf_map/area", 10); //  发布到 /sdf_map/area topic
 
   depth_sub_.reset(new message_filters::Subscriber<sensor_msgs::Image>(node_, "/map_ros/depth", 50));
   cloud_sub_.reset(
@@ -95,9 +99,9 @@ void MapROS::init() {
 
   map_start_time_ = ros::Time::now();
 
-
-  int status = pcl::io::loadPCDFile<pcl::PointXYZ>("/home/long/fuel_ws/src/FUEL/uav_simulator/map_generator/resource/office2.pcd", mapcloud);
-  map_total_volome = getPointCloudVoxelVolume(mapcloud);
+  
+  // int status = pcl::io::loadPCDFile<pcl::PointXYZ>("/home/long/fuel_ws/src/FUEL/uav_simulator/map_generator/resource/office2.pcd", mapcloud);
+  // map_total_volome = getPointCloudVoxelVolume(mapcloud);
 }
 
 void MapROS::visCallback(const ros::TimerEvent& e) {
@@ -249,6 +253,17 @@ double MapROS::getPointCloudVoxelVolume(const pcl::PointCloud<pcl::PointXYZ>& cl
 }
 
 
+void finishCallback(const std_msgs::Bool msg){
+  if(msg.data == false){
+    isfinish = false;
+  }
+  else if (msg.data == true)
+  {
+    isfinish = true;
+  }
+  
+}
+
 void MapROS::publishMapAll() {
   pcl::PointXYZ pt;
   pcl::PointCloud<pcl::PointXYZ> cloud1, cloud2;
@@ -292,24 +307,24 @@ void MapROS::publishMapAll() {
                 ios::app);
   file << "time:" << time_now << ",vol:" << known_volumn << std::endl;
 
-  int limit = 99;
+  // int limit = 99;
   std_msgs::Float64 area_msg;
-  area_msg.data = known_volumn/767.779 * 100;
-  area_pub_.publish(area_msg);
+  area_msg.data = known_volumn;
+  // area_pub_.publish(area_msg);
 
-  if(area_msg.data < limit && area_msg.data > 2.1 && time_now - time_tmp >= 1){
+  if(known_volumn > 29 && isfinish == false && time_now - time_tmp >= 1){
     
     time_tmp = time_now;
     flighttime += 1;
     ofstream coveragefile("/home/long/fuel_ws/src/FUEL/fuel_planner/exploration_manager/resource/coverage.txt",
                   ios::app);
-    coveragefile << "time:" << flighttime << ",coverage:" << area_msg.data << ",vol" << known_volumn << std::endl;
+    coveragefile << "time:" << flighttime << ",vol" << known_volumn << std::endl;
   }
-  else if(area_msg.data >= limit && !isfinish){
+  else if(isfinish == true){
     ofstream coveragefile("/home/long/fuel_ws/src/FUEL/fuel_planner/exploration_manager/resource/coverage.txt",
               ios::app);
-    coveragefile << "time:" << flighttime << ",coverage:" << area_msg.data << ",vol" << known_volumn << std::endl;
-    isfinish = !isfinish;
+    coveragefile << "time:" << flighttime << ",vol" << known_volumn << std::endl;
+    isfinish = false;
     coveragefile << "explore end" << std::endl;
   }
 }

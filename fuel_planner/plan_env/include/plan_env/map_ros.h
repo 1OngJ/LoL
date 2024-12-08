@@ -8,6 +8,8 @@
 #include <pcl_conversions/pcl_conversions.h>
 
 #include <ros/ros.h>
+#include "std_msgs/Bool.h"
+#include "std_msgs/Empty.h"
 
 #include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/PoseStamped.h>
