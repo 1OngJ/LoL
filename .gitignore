@@ -3,3 +3,7 @@ fuel_planner/.vscode
 *.clang-format
 fuel_planner/utils/lkh_tsp_solver/resource/single.tsp
 fuel_planner/utils/lkh_tsp_solver/resource/single.txt
+fuel_planner/exploration_manager/curve1 huge.txt
+fuel_planner/exploration_manager/curve1 small.txt
+fuel_planner/exploration_manager/timeAndlength huge.txt
+fuel_planner/exploration_manager/timeAndlength small.txt
