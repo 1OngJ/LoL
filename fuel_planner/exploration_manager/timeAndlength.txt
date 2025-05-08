@@ -1,0 +1,11 @@
+huge
+flight:1500.54,path length:1858.85mean vel:1.23879, energy is:21616.8
+flight:1513.32,path length:1778.88mean vel:1.17547, energy is:20640.1
+flight:1562.16,path length:1903.31mean vel:1.21838, energy is:19816.7
+flight:1467.11,path length:1840.01mean vel:1.25417, energy is:19217.8
+flight:1494.09,path length:1717.27mean vel:1.14937, energy is:17892.2
+flight:1452.63,path length:1754.83mean vel:1.20803, energy is:20100.5
+flight:1503.68,path length:1778.29mean vel:1.18262, energy is:20840.2
+flight:1575.63,path length:1838.52mean vel:1.16684, energy is:20372.9
+flight:1427.14,path length:1744.51mean vel:1.22238, energy is:19790.8
+flight:1506.78,path length:1811.2mean vel:1.20204, energy is:17956.8

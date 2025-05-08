@@ -19,7 +19,7 @@
 #include <pcl/point_types.h>
 #include <visualization_msgs/Marker.h>
 
-#include <wall_seg/WallInfo.h>
+// #include <wall_seg/WallInfo.h>
 #include <active_perception/perception_utils.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
@@ -67,8 +67,8 @@ void FastExplorationManager::initialize(ros::NodeHandle& nh) {
 
 
   
-  wall_info_sub_ = nh.subscribe("/wall_info", 100, &FastExplorationManager::wallInfoCallback, this);
-  corner_cost_pub_ = nh.advertise<sensor_msgs::PointCloud2>("/corner_cost", 1);
+  // wall_info_sub_ = nh.subscribe("/wall_info", 100, &FastExplorationManager::wallInfoCallback, this);
+  // corner_cost_pub_ = nh.advertise<sensor_msgs::PointCloud2>("/corner_cost", 1);
 
 
   ViewNode::astar_.reset(new Astar);
@@ -504,33 +504,33 @@ void FastExplorationManager::findGlobalTour(
   ROS_WARN("Cost mat: %lf, TSP: %lf", mat_time, tsp_time);
 }
 
-void FastExplorationManager::wallInfoCallback(const wall_seg::WallInfo::ConstPtr& msg)
-{
+// void FastExplorationManager::wallInfoCallback(const wall_seg::WallInfo::ConstPtr& msg)
+// {
 
-    // ROS_WARN("Received wall info: id=%d, angle=%.2f, corner=(%.2f, %.2f, %.2f)",
-    //          msg->wall_id, msg->angle, msg->corner_position.x, msg->corner_position.y, msg->corner_position.z);
+//     // ROS_WARN("Received wall info: id=%d, angle=%.2f, corner=(%.2f, %.2f, %.2f)",
+//     //          msg->wall_id, msg->angle, msg->corner_position.x, msg->corner_position.y, msg->corner_position.z);
 
-    // Store the wall angle info for exploration cost calculation
-    WallAngleInfo wai;
-    wai.wall_id = msg->wall_id;
-    wai.corner_position = Eigen::Vector3d(msg->corner_position.x, msg->corner_position.y, msg->corner_position.z);
-    wai.angle = msg->angle;
-    wai.centroid = Eigen::Vector3d(msg->centroid.x, msg->centroid.y, msg->centroid.z);
-    wai.normal = Eigen::Vector3d(msg->normal.x, msg->normal.y, msg->normal.z);
-    wai.explored = false; // Initially unexplored
+//     // Store the wall angle info for exploration cost calculation
+//     WallAngleInfo wai;
+//     wai.wall_id = msg->wall_id;
+//     wai.corner_position = Eigen::Vector3d(msg->corner_position.x, msg->corner_position.y, msg->corner_position.z);
+//     wai.angle = msg->angle;
+//     wai.centroid = Eigen::Vector3d(msg->centroid.x, msg->centroid.y, msg->centroid.z);
+//     wai.normal = Eigen::Vector3d(msg->normal.x, msg->normal.y, msg->normal.z);
+//     wai.explored = false; // Initially unexplored
 
-    // Check for duplicates (optional, but recommended for robustness)
-    bool duplicate = false;
-    for (const auto& existing_wai : wall_angles_) {
-        if (existing_wai.wall_id == wai.wall_id && existing_wai.explored) {
-            duplicate = true;
-            break;
-        }
-    }
-    if (!duplicate) {
-        wall_angles_.push_back(wai);
-    }
-}
+//     // Check for duplicates (optional, but recommended for robustness)
+//     bool duplicate = false;
+//     for (const auto& existing_wai : wall_angles_) {
+//         if (existing_wai.wall_id == wai.wall_id && existing_wai.explored) {
+//             duplicate = true;
+//             break;
+//         }
+//     }
+//     if (!duplicate) {
+//         wall_angles_.push_back(wai);
+//     }
+// }
 
 
 // Cost Calculation with corner cost

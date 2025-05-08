@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 
-#include <wall_seg/WallInfo.h>
+// #include <wall_seg/WallInfo.h>
 
 using Eigen::Vector3d;
 using std::shared_ptr;
@@ -14,14 +14,14 @@ using std::unique_ptr;
 using std::vector;
 
 
-  struct WallAngleInfo {
-    int wall_id;
-    Eigen::Vector3d corner_position;
-    double angle;
-    Eigen::Vector3d centroid;
-    Eigen::Vector3d normal;
-    bool explored; 
-};
+//   struct WallAngleInfo {
+//     int wall_id;
+//     Eigen::Vector3d corner_position;
+//     double angle;
+//     Eigen::Vector3d centroid;
+//     Eigen::Vector3d normal;
+//     bool explored; 
+// };
 
 namespace fast_planner {
 class EDTEnvironment;
@@ -49,7 +49,7 @@ public:
 
   shared_ptr<ExplorationData> ed_;
   shared_ptr<ExplorationParam> ep_;
-  ros::Subscriber wall_info_sub_;
+  // ros::Subscriber wall_info_sub_;
   ros::Publisher corner_cost_pub_;
   shared_ptr<FastPlannerManager> planner_manager_;
   shared_ptr<FrontierFinder> frontier_finder_;
@@ -59,7 +59,7 @@ private:
   shared_ptr<EDTEnvironment> edt_environment_;
   shared_ptr<SDFMap> sdf_map_;
 
-  std::vector<WallAngleInfo> wall_angles_;
+  // std::vector<WallAngleInfo> wall_angles_;
 
   // Find optimal tour for coarse viewpoints of all frontiers
   void findGlobalTour(const Vector3d& cur_pos, const Vector3d& cur_vel, const Vector3d cur_yaw,
@@ -72,11 +72,11 @@ private:
 
   void shortenPath(vector<Vector3d>& path);
 
-  void wallInfoCallback(const wall_seg::WallInfo::ConstPtr& msg);
+  // void wallInfoCallback(const wall_seg::WallInfo::ConstPtr& msg);
 
-  double cornerCost(const Vector3d& viewpoint_position, const vector<WallAngleInfo>& corners);
+  // double cornerCost(const Vector3d& viewpoint_position, const vector<WallAngleInfo>& corners);
 
-  void publishCornerCost();
+  // void publishCornerCost();
 
 public:
   typedef shared_ptr<FastExplorationManager> Ptr;
